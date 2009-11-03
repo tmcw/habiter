@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+# Habiter: simple habit tracking
+# add or update habit:
+#   'habiter.rb did clean_room'
+# view habit graph:
+#   'habiter.rb graph'
+
+require 'yaml'
+require 'optparse'
+
+@habiter_file = File.expand_path('~/.habiter.yaml')
+
+unless @habits = YAML::load_file(@habiter_file)
+  puts "Couldn't load habits file. Create one please?"
+  exit
+end
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: habiter.rb [options]"
+end
+
+
+def did(key)
+  if not @habits.has_key?(key)
+    print "#{key} is not a habit yet. create and complete it? (y/n) "
+    if STDIN.gets.chomp == 'y'
+      @habits[key] = [Time.now]
+    end
+  else
+    @habits[key] << Time.now
+  end
+  File.open(@habiter_file, 'w') do |f|
+    YAML.dump(@habits, f)
+  end
+end
+
+def graph()
+  @habits.each do |habit|
+    now = Time.now
+    (0..30).each do |i|
+      puts habit
+      now -= 86400 * i
+      puts now
+    end
+  end
+end
+
+if ARGV[0] == 'did'
+  did(ARGV[1])
+elsif ARGV[0] == 'graph'
+  graph()
+end

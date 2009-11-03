@@ -1,0 +1,6 @@
+habiter is a simple tool for maintaining good habits
+
+It can be used with the 'don't break the chain' technique, like
+Joe's Goals or Sciral Consistency, but adopts more positive
+techniques and uses a readable and editable YAML text file as
+storage.

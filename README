@@ -4,3 +4,14 @@ It can be used with the 'don't break the chain' technique, like
 Joe's Goals or Sciral Consistency, but adopts more positive
 techniques and uses a readable and editable YAML text file as
 storage.
+
+Demo
+----
+
+~$ habiter did clean_room
+clean_room is not a habit yet. create and complete it? (y/n) y
+~$ habiter did jog
+jog is not a habit yet. create and complete it? (y/n) y
+~$ habiter log
+       jog | ------------------------------+
+clean_room | ------------------------------+

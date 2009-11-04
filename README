@@ -15,3 +15,9 @@ jog is not a habit yet. create and complete it? (y/n) y
 ~$ habiter log
        jog | ------------------------------+
 clean_room | ------------------------------+
+
+Install
+-------
+
+Install with 'gem install habiter' if you have gemcutter set up as a
+repository

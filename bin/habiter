@@ -55,18 +55,24 @@ end
 def log(options={})
   options[:days] = 30 unless options[:days]
   name_column_width = @habits.max {|a,b| a.length <=> b.length}[0].length
+  day = Date.today - options[:days] * 86400
+  print " " * (name_column_width + 2)
+  (0..options[:days]).each do |i|
+      print (day + (86400 * i)).strftime('%a')[0].chr.swapcase.colorize(36)
+  end
+  puts
   @habits.each do |habit, times|
     day = Date.today - options[:days] * 86400
-    print sprintf("%#{name_column_width}s ", habit)
-    print "|".colorize(32)
+    print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(36)
     times.collect! do |time|
       time.to_date
     end
     (0..options[:days]).each do |i|
       if times.include? day
-        print "+".colorize(32)
+        print "+"
+        #print "+".colorize(34)
       else
-        print "-".colorize(31)
+        print " "
       end
       day += 86400
     end

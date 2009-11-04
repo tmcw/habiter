@@ -1,19 +1,30 @@
 #!/usr/bin/env ruby
 # Habiter: simple habit tracking
 # add or update habit:
-#   'habiter.rb did clean_room'
+#   'habiter did clean_room'
 # view habit graph:
-#   'habiter.rb graph'
+#   'habiter graph'
 
 require 'yaml'
 require 'optparse'
 
+# Stolen from ActiveSupport
+class Time
+  def to_date
+    ::Date.new(year, month, day)
+  end unless method_defined?(:to_date)
+end
+  
+
 @habiter_file = File.expand_path('~/.habiter.yaml')
 
-unless @habits = YAML::load_file(@habiter_file)
-  puts "Couldn't load habits file. Create one please?"
-  exit
+begin
+  @habits = YAML::load_file(@habiter_file)
+rescue
+  File.open(@habiter_file, 'w').close()
 end
+
+@habits = {} unless @habits
 
 options = {}
 OptionParser.new do |opts|
@@ -35,14 +46,24 @@ def did(key)
   end
 end
 
-def graph()
-  @habits.each do |habit|
-    now = Time.now
-    (0..30).each do |i|
-      puts habit
-      now -= 86400 * i
-      puts now
+
+def graph(options={})
+  options[:days] = 30 unless options[:days]
+  day = Date.today - options[:days] * 86400
+  @habits.each do |habit, times|
+    print sprintf("%10s | ", habit)
+    times.collect! do |time|
+      time.to_date
     end
+    (0..options[:days]).each do |i|
+      if times.include? day
+        print "+"
+      else
+        print "-"
+      end
+      day += 86400
+    end
+    puts
   end
 end
 

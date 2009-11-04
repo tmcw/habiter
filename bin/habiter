@@ -65,17 +65,23 @@ def log(options={})
     day = Date.today - (options[:days])
     print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(36)
     times.collect! do |time|
-      time.to_date
+      if time.is_a? Time
+        time.to_date
+      elsif time.is_a? Date
+        time
+      end
     end
+    done_in_last_30 = 0
     (0..options[:days]).each do |i|
       if times.include? day
         print "+"
-        #print "+".colorize(34)
+        done_in_last_30 += 1
       else
         print " "
       end
       day += 1
     end
+    print "(#{done_in_last_30}/30)".colorize(36)
     puts
   end
 end

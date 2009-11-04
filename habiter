@@ -14,6 +14,13 @@ class Time
     ::Date.new(year, month, day)
   end unless method_defined?(:to_date)
 end
+
+class String
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+end
+
   
 
 @habiter_file = File.expand_path('~/.habiter.yaml')
@@ -30,8 +37,6 @@ options = {}
 OptionParser.new do |opts|
   opts.banner = "Usage: habiter.rb [options]"
 end
-
-
 def did(key)
   if not @habits.has_key?(key)
     print "#{key} is not a habit yet. create and complete it? (y/n) "
@@ -47,19 +52,21 @@ def did(key)
 end
 
 
-def graph(options={})
+def log(options={})
   options[:days] = 30 unless options[:days]
-  day = Date.today - options[:days] * 86400
+  name_column_width = @habits.max {|a,b| a.length <=> b.length}[0].length
   @habits.each do |habit, times|
-    print sprintf("%10s | ", habit)
+    day = Date.today - options[:days] * 86400
+    print sprintf("%#{name_column_width}s ", habit)
+    print "|".colorize(32)
     times.collect! do |time|
       time.to_date
     end
     (0..options[:days]).each do |i|
       if times.include? day
-        print "+"
+        print "+".colorize(32)
       else
-        print "-"
+        print "-".colorize(31)
       end
       day += 86400
     end
@@ -69,6 +76,6 @@ end
 
 if ARGV[0] == 'did'
   did(ARGV[1])
-elsif ARGV[0] == 'graph'
-  graph()
+elsif ARGV[0] == 'log'
+  log()
 end

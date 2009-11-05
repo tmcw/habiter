@@ -54,7 +54,7 @@ end
 
 def log(options={})
   options[:days] = 30 unless options[:days]
-  name_column_width = @habits.max {|a,b| a.length <=> b.length}[0].length
+  name_column_width = @habits.max {|a,b| a[0].length <=> b[0].length}[0].length
   day = Date.today - options[:days]
   print " " * (name_column_width + 2)
   (0..options[:days]).each do |i|

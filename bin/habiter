@@ -34,8 +34,8 @@ end
 @habits = {} unless @habits
 
 options = {}
-OptionParser.new do |opts|
-  opts.banner = "Usage: habiter.rb [options]"
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: habiter.rb did your_habit"
 end
 def did(key)
   if not @habits.has_key?(key)
@@ -53,17 +53,17 @@ end
 
 
 def log(options={})
-  options[:days] = 30 unless options[:days]
+  options[:days] = 28 unless options[:days]
   name_column_width = @habits.max {|a,b| a[0].length <=> b[0].length}[0].length
   day = Date.today - options[:days]
   print " " * (name_column_width + 2)
   (0..options[:days]).each do |i|
-      print (day + (i)).strftime('%a')[0].chr.swapcase.colorize(36)
+      print (day + (i)).strftime('%a')[0].chr.swapcase.colorize(37)
   end
   puts
   @habits.each do |habit, times|
     day = Date.today - (options[:days])
-    print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(36)
+    print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
     times.collect! do |time|
       if time.is_a? Time
         time.to_date
@@ -71,23 +71,35 @@ def log(options={})
         time
       end
     end
-    done_in_last_30 = 0
+    done_in_last_28, week, pre_week = 0, 0, 0
     (0..options[:days]).each do |i|
       if times.include? day
-        print "+"
-        done_in_last_30 += 1
+        print "+".colorize(47)
+        done_in_last_28 += 1
+        pre_week += 1 unless i >= 20
+        week += 1 unless i < 20
       else
-        print " "
+        print "-".colorize(37)
       end
       day += 1
     end
-    print "(#{done_in_last_30}/30)".colorize(36)
+    if ((pre_week / 3) > (week + 2))
+      print "|".colorize(37)
+      print "(#{done_in_last_28}/28)".colorize(31)
+    else
+      print "|".colorize(37)
+      print "(#{done_in_last_28}/28)".colorize(32)
+    end
     puts
   end
 end
+
+optparse.parse!
 
 if ARGV[0] == 'did'
   did(ARGV[1])
 elsif ARGV[0] == 'log'
   log()
+else
+  puts optparse
 end

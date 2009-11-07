@@ -72,6 +72,7 @@ def log(options={})
     end
     puts
   end
+  daily_counts = Array.new(29, 0)
   @habits.each do |habit, times|
     day = Date.today - (options[:days])
     print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
@@ -86,6 +87,7 @@ def log(options={})
     (0..options[:days]).each do |i|
       if times.include? day
         print "+".colorize(47)
+        daily_counts[i] += 1
         done_in_last_28 += 1
         pre_week += 1 unless i >= 20
         week += 1 unless i < 20
@@ -100,6 +102,13 @@ def log(options={})
     else
       print "|".colorize(37)
       print "(#{done_in_last_28}/28)".colorize(32)
+    end
+    puts
+  end
+  if options[:verbose]
+    print " " * (name_column_width + 2)
+    (0..options[:days]).each do |i|
+        print (daily_counts[i] > 0) ? daily_counts[i] : " "
     end
     puts
   end

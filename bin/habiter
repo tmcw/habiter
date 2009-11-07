@@ -36,7 +36,10 @@ end
 options = {}
 
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: habiter.rb did your_habit"
+  opts.banner = 
+    "Usage:
+    habiter did your_habit
+    habiter log"
   options[:verbose] = false
   opts.on('-v', '--verbose', "Show weekday letters for log") do
     options[:verbose] = true

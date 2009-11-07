@@ -34,9 +34,15 @@ end
 @habits = {} unless @habits
 
 options = {}
+
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: habiter.rb did your_habit"
+  options[:verbose] = false
+  opts.on('-v', '--verbose', "Show weekday letters for log") do
+    options[:verbose] = true
+  end
 end
+
 def did(key)
   if not @habits.has_key?(key)
     print "#{key} is not a habit yet. create and complete it? (y/n) "
@@ -56,11 +62,13 @@ def log(options={})
   options[:days] = 28 unless options[:days]
   name_column_width = @habits.max {|a,b| a[0].length <=> b[0].length}[0].length
   day = Date.today - options[:days]
-  print " " * (name_column_width + 2)
-  (0..options[:days]).each do |i|
-      print (day + (i)).strftime('%a')[0].chr.swapcase.colorize(37)
+  if options[:verbose]
+    print " " * (name_column_width + 2)
+    (0..options[:days]).each do |i|
+        print (day + (i)).strftime('%a')[0].chr.swapcase.colorize(37)
+    end
+    puts
   end
-  puts
   @habits.each do |habit, times|
     day = Date.today - (options[:days])
     print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
@@ -99,7 +107,7 @@ optparse.parse!
 if ARGV[0] == 'did'
   did(ARGV[1])
 elsif ARGV[0] == 'log'
-  log()
+  log(options)
 else
   puts optparse
 end

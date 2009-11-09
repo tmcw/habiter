@@ -46,14 +46,16 @@ optparse = OptionParser.new do |opts|
   end
 end
 
-def did(key)
+def did(args)
+  key = args[1]
+  new_record = (args.length > 2) ? {Time.now => args[2]} : Time.now
   if not @habits.has_key?(key)
     print "#{key} is not a habit yet. create and complete it? (y/n) "
     if STDIN.gets.chomp == 'y'
-      @habits[key] = [Time.now]
+      @habits[key] = [new_record]
     end
   else
-    @habits[key] << Time.now
+    @habits[key] << new_record
   end
   File.open(@habiter_file, 'w') do |f|
     YAML.dump(@habits, f)
@@ -122,7 +124,7 @@ end
 optparse.parse!
 
 if ARGV[0] == 'did'
-  did(ARGV[1])
+  did(ARGV)
 elsif ARGV[0] == 'log'
   log(options)
 else

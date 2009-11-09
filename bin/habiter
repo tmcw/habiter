@@ -77,9 +77,14 @@ def log(options={})
     day = Date.today - (options[:days])
     print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
     times.collect! do |time|
+      if time.is_a? Hash
+        # For scalar values, normalize
+        time = time.keys.first
+      end
       if time.is_a? Time
         time.to_date
       elsif time.is_a? Date
+        # For user-inputted values, normalize
         time
       end
     end

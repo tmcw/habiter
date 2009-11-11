@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = %q{habiter}
-  s.version = "0.1.2"
-  s.date = %q{2009-11-03}
+  s.version = "0.2"
+  s.date = %q{2009-11-06}
   s.authors = ["Tom MacWright"]
   s.email = %q{tom@developmentseed.org}
   s.summary = %q{A simple text-based habit tracker}

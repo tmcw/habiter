@@ -22,19 +22,17 @@ class String
 end
 
   
-
-@habiter_file = File.expand_path('~/.habiter.yaml')
-
-begin
-  @habits = YAML::load_file(@habiter_file)
-rescue
-  File.open(@habiter_file, 'w').close()
+def habiter_initialize
+  @habiter_file = File.expand_path('~/.habiter.yaml')
+  begin
+    @habits = YAML::load_file(@habiter_file)
+  rescue
+    File.open(@habiter_file, 'w').close()
+  end
+  @habits = {} unless @habits
 end
 
-@habits = {} unless @habits
-
 options = {}
-
 optparse = OptionParser.new do |opts|
   opts.banner = 
     "Usage:
@@ -46,6 +44,9 @@ optparse = OptionParser.new do |opts|
   end
 end
 
+# Record that somebody did something. Expects an unadulterated
+# args array, from which it takes the second and optionally third
+# parameters
 def did(args)
   key = args[1]
   new_record = (args.length > 2) ? {Time.now => args[2]} : Time.now
@@ -63,6 +64,30 @@ def did(args)
 end
 
 
+def normalize_time(time)
+  if time.is_a? Hash
+    time = time.keys.first
+  end
+  if time.is_a? Time
+    time.to_date
+  elsif time.is_a? Date
+    time
+  end
+end
+
+# Output this YAML datastore as normalized CSV for processing by
+# whatever wants it
+def dump(options={})
+  cols = @habits.length
+  @habits.each do |habit, times|
+    times.collect! do |time|
+      this_time = normalize_time(time)
+      bytime[time] 
+    end
+  end
+end
+
+# Display a basic visualization of recent task completion
 def log(options={})
   options[:days] = 28 unless options[:days]
   name_column_width = @habits.max {|a,b| a[0].length <=> b[0].length}[0].length
@@ -79,16 +104,7 @@ def log(options={})
     day = Date.today - (options[:days])
     print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
     times.collect! do |time|
-      if time.is_a? Hash
-        # For scalar values, normalize
-        time = time.keys.first
-      end
-      if time.is_a? Time
-        time.to_date
-      elsif time.is_a? Date
-        # For user-inputted values, normalize
-        time
-      end
+      normalize_time(time)
     end
     done_in_last_28, week, pre_week = 0, 0, 0
     (0..options[:days]).each do |i|
@@ -123,10 +139,12 @@ end
 
 optparse.parse!
 
+habiter_initialize()
+
 if ARGV[0] == 'did'
   did(ARGV)
 elsif ARGV[0] == 'log'
   log(options)
-else
-  puts optparse
+elsif ARGV[0] == 'dump'
+  dump(options)
 end

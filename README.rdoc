@@ -51,4 +51,20 @@ Edit ~/.habiter.yaml
 
   echo > ~/.habiter.yaml
 
+= Changelog
+
+== 3.0 (roadmap)
+
+* Dump to CSV
+
+== 2.5
+
+* Allows 'did' in past and future
+* Restructuring and cleanup internally
+* Internal documentation
+
+== 2.0
+
+* Scalar input
+
 Dedicated to Bryn Bellomy :)

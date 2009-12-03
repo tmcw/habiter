@@ -63,14 +63,14 @@ class HabiterBin < Habiter
     if options[:verbose]
       print " " * (name_column_width + 2)
       (0..options[:days]).each do |i|
-          print (day + (i)).strftime('%a')[0].chr.swapcase.colorize(37)
+          print((day + (i)).strftime('%a')[0].chr.swapcase.colorize(37))
       end
       puts
     end
     daily_counts = Array.new(29, 0)
     @habits.each do |habit, times|
       day = Date.today - (options[:days])
-      print (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
+      print((sprintf("%#{name_column_width}s ", habit) + "|").colorize(37))
       times.collect! do |time|
         normalize_time(time)
       end

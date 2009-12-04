@@ -36,12 +36,13 @@ end
 
 class HabiterBin < Habiter
 
-  def did(args)
+  def did(args, options)
     # Record that somebody did something. Expects an unadulterated
     # args array, from which it takes the second and optionally third
     # parameters
     key = args[1]
-    new_record = (args.length > 2) ? {Date.today => args[2]} : Date.today
+    day = Date.today - options[:yester]
+    new_record = (args.length > 2) ? {day => args[2]} : day
     if not @habits.has_key?(key)
       print "#{key} is not a habit yet. create and complete it? (y/n) "
       if STDIN.gets.chomp == 'y'
@@ -153,12 +154,17 @@ optparse = OptionParser.new do |opts|
   opts.on('-v', '--verbose', "Show weekday letters for log") do
     options[:verbose] = true
   end
+  options[:yester] = 0
+  opts.on('-y', '--yester [DAYS]',
+          "Log an event in the past, given a number of days") do |days|
+    options[:yester] = days.to_i
+  end
 end
 
 optparse.parse!
 
 if ARGV[0] == 'did'
-  hm.did(ARGV)
+  hm.did(ARGV, options)
 elsif ARGV[0] == 'log'
   hm.log(options)
 elsif ARGV[0] == 'dump'

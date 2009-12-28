@@ -35,6 +35,23 @@ end
 
 
 class HabiterBin < Habiter
+  def dump(options={})
+    # Output this YAML datastore as normalized CSV for processing by
+    # whatever wants it
+    cols = @habits.length
+    i = 0 # TODO: AVOID THIS
+    rotated = {}
+    @habits.each do |habit, times|
+      times.collect! do |time|
+        this_time = normalize_time(time)
+        day = rotated.fetch(this_time, Array.new(cols, 0))
+        day[i] = (day[i].nil?) ? 1 : day[i] + 1
+        rotated[this_time] = day
+      end
+      i += 1
+    end
+    puts rotated.sort.keys[0]
+  end
 
   def did(key, scalar = false, yester = 0)
     # Record that somebody did something. Expects an unadulterated
@@ -99,7 +116,7 @@ class HabiterBin < Habiter
     if options[:verbose]
       print " " * (name_column_width + 2)
       (0..options[:days]).each do |i|
-          print (daily_counts[i] > 0) ? daily_counts[i] : " "
+          print((daily_counts[i] > 0) ? daily_counts[i] : " ")
       end
       puts
     end
@@ -117,23 +134,6 @@ def normalize_time(time)
   end
 end
 
-# Output this YAML datastore as normalized CSV for processing by
-# whatever wants it
-def dump(options={})
-  cols = @habits.length
-  i = 0 # TODO: AVOID THIS
-  rotated = {}
-  @habits.each do |habit, times|
-    times.collect! do |time|
-      this_time = normalize_time(time)
-      day = rotated.fetch(this_time, Array.new(cols, 0))
-      day[i] = (day[i].nil?) ? 1 : day[i] + 1
-      rotated[this_time] = day
-    end
-    i += 1
-  end
-  puts rotated.sort
-end
 
 
 
@@ -169,5 +169,5 @@ if ARGV[0] == 'did'
 elsif ARGV[0] == 'log'
   hm.log(options)
 elsif ARGV[0] == 'dump'
-  dump(options)
+  hm.dump(options)
 end

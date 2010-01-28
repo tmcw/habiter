@@ -53,19 +53,33 @@ class HabiterBin < Habiter
     puts rotated.sort.keys[0]
   end
 
-  def did(key, scalar = false, yester = 0)
+  def normalcy()
+    @habits.collect do |habit, times|
+      times.collect! do |time|
+        normalize_time(time)
+      end
+    end
+    File.open(@habiter_file+'.new', 'w') do |f|
+      YAML.dump(@habits, f)
+    end
+  end
+
+
+  def did(keys, scalar = false, yester = 0)
     # Record that somebody did something. Expects an unadulterated
     # args array, from which it takes the second and optionally third
     # parameters
-    day = Date.today - yester
-    new_record = (scalar) ? {day => scalar} : day
-    if not @habits.has_key?(key)
-      print "#{key} is not a habit yet. create and complete it? (y/n) "
-      if STDIN.gets.chomp == 'y'
-        @habits[key] = [new_record]
+    keys.split(',').each do |key|
+      day = Date.today - yester
+      new_record = (scalar) ? {day => scalar} : day
+      if not @habits.has_key?(key)
+        print "#{key} is not a habit yet. create and complete it? (y/n) "
+        if STDIN.gets.chomp == 'y'
+          @habits[key] = [new_record]
+        end
+      else
+        @habits[key] << new_record
       end
-    else
-      @habits[key] << new_record
     end
     File.open(@habiter_file, 'w') do |f|
       YAML.dump(@habits, f)
@@ -170,4 +184,6 @@ elsif ARGV[0] == 'log'
   hm.log(options)
 elsif ARGV[0] == 'dump'
   hm.dump(options)
+elsif ARGV[0] == 'normalcy'
+  hm.normalcy()
 end

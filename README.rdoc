@@ -1,0 +1,70 @@
+habiter is a simple tool for maintaining good habits
+
+It can be used with the 'don't break the chain' technique, like
+Joe's Goals or Sciral Consistency, but adopts more positive
+techniques and uses a readable and editable YAML text file as
+storage.
+
+= Installation
+
+  % gem install habiter -s http://gemcutter.org/
+
+= Demo
+
+  ~$ habiter did clean_room
+  clean_room is not a habit yet. create and complete it? (y/n) y
+  ~$ habiter did jog
+  jog is not a habit yet. create and complete it? (y/n) y
+  ~$ habiter log
+             jog |----------------------------+|(1/28)
+         project |-------------------------++-+|(3/28)
+  practice_music |-----------------------+++++-|(5/28)
+        read_30m |-----------------------+--++-|(3/28)
+      clean_room |-----------------------+-+---|(2/28)
+
+= Scalars
+
+Habiter also now supports scalars: you can input a value for your
+activity, like
+
+  habiter did jog 5.5
+  habiter did heartbeat 78
+
+And it will be recorded. There is no representation of this data yet,
+and the representation within habiter will be minimal, only good output to
+formats which are easily visualized.
+
+= Install
+
+Install with 'gem install habiter' if you have gemcutter set up as a
+repository
+
+= FAQ
+
+* How do I add past data?
+  How do I delete recorded data?
+  How do I modify stuff I've recorded?
+
+Edit ~/.habiter.yaml
+
+* How do I reset habiter?
+
+  echo > ~/.habiter.yaml
+
+= Changelog
+
+== 3.0 (roadmap)
+
+* Dump to CSV
+
+== 2.5
+
+* Allows 'did' in past and future
+* Restructuring and cleanup internally
+* Internal documentation
+
+== 2.0
+
+* Scalar input
+
+Dedicated to Bryn Bellomy :)

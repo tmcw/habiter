@@ -1,0 +1,178 @@
+#!/usr/bin/env ruby
+# Habiter: simple habit tracking
+# add or update habit:
+#   'habiter did clean_room'
+# view habit graph:
+#   'habiter graph'
+
+require 'yaml'
+require 'optparse'
+
+# Stolen from ActiveSupport
+class Time
+  def to_date
+    ::Date.new(year, month, day)
+  end unless method_defined?(:to_date)
+end
+
+class String
+  def colorize(color_code)
+    "\e[#{color_code}m#{self}\e[0m"
+  end
+end
+
+class Array; def sum; inject( nil ) { |sum,x| sum ? sum+x : x }; end; end
+
+##
+# Base Classes
+## 
+
+class Habiter
+  def initialize(data_path = '~/.habiter.yaml') 
+    @habiter_file = File.expand_path(data_path)
+    @web_file= File.expand_path('~/.habiter.web.yaml')
+    begin
+      @habits = YAML::load_file(@habiter_file)
+      @webfile = YAML::load_file(@web_file)
+    rescue
+      File.open(@habiter_file, 'w').close()
+      File.open(@web_file, 'w').close()
+    end
+    @habits = {} unless @habits
+  end
+end
+
+
+class HabiterBin < Habiter
+  def dump(options={})
+    # Output this YAML datastore as normalized CSV for processing by
+    # whatever wants it
+    cols = @habits.length
+    i = 0 # TODO: AVOID THIS
+    rotated = {}
+    @habits.each do |habit, times|
+      times.collect! do |time|
+        this_time = normalize_time(time)
+        day = rotated.fetch(this_time, Array.new(cols, 0))
+        day[i] = (day[i].nil?) ? 1 : day[i] + 1
+        rotated[this_time] = day
+      end
+      i += 1
+    end
+    puts rotated.sort.keys[0]
+  end
+
+  def did(keys, scalar = false, yester = 0)
+    # Record that somebody did something. Expects an unadulterated
+    # args array, from which it takes the second and optionally third
+    # parameters
+    keys.split(',').each do |key|
+      day = Date.today - yester
+      new_record = (scalar) ? {day => scalar} : day
+      if not @habits.has_key?(key)
+        print "#{key} is not a habit yet. create and complete it? (y/n) "
+        if STDIN.gets.chomp == 'y'
+          @habits[key] = [new_record]
+        end
+      else
+        @habits[key] << new_record
+      end
+    end
+    File.open(@habiter_file, 'w') do |f|
+      YAML.dump(@habits, f)
+    end
+  end
+
+  def log(options={})
+    # Display a basic visualization of recent task completion
+    options[:days] = 28 unless options[:days]
+    name_column_width = @habits.max {|a,b| a[0].length <=> b[0].length}[0].length
+    day = Date.today - options[:days]
+    print " " * (name_column_width + 2)
+    (0..options[:days]).each do |i|
+        print((day + (i)).strftime('%a')[0].chr.swapcase.colorize(37))
+    end
+    puts
+    daily_counts = Array.new(29, 0)
+    @habits.each do |habit, times|
+      day = Date.today - (options[:days])
+      habit_output = ""
+      habit_output << (sprintf("%#{name_column_width}s ", habit) + "|").colorize(37)
+      times.collect! do |time|
+        normalize_time(time)
+      end
+      done_in_last_28, week, pre_week = 0, 0, 0
+      (0..options[:days]).each do |i|
+        if times.include? day
+          habit_output << "+".colorize(47)
+          daily_counts[i] += 1
+          done_in_last_28 += 1
+          pre_week += 1 unless i >= 20
+          week += 1 unless i < 20
+        else
+          habit_output << "-".colorize(37)
+        end
+        day += 1
+      end
+      if done_in_last_28 > 0
+        if ((pre_week / 3) > (week + 2))
+          habit_output << "|".colorize(37)
+          habit_output << "(#{done_in_last_28}/28)".colorize(31)
+          habit_output << "[#{times.length}]".colorize(31)
+        else
+          habit_output << "|".colorize(37)
+          habit_output << "(#{done_in_last_28}/28)".colorize(32)
+          habit_output << "[#{times.length}]".colorize(31)
+        end
+        puts habit_output
+      end
+    end
+    print " " * (name_column_width + 2)
+    (0..options[:days]).each do |i|
+        print((daily_counts[i] > 0) ? daily_counts[i] : " ")
+    end
+    puts
+  end
+end
+
+def normalize_time(time)
+  if time.is_a? Hash
+    time = time.keys.first
+  end
+  if time.is_a? Time
+    time.to_date
+  elsif time.is_a? Date
+    time
+  end
+end
+
+hm = HabiterBin.new
+
+##
+# Command-line handling
+##
+
+options = {}
+optparse = OptionParser.new do |opts|
+  opts.banner = 
+    "Usage:
+    habiter did your_habit
+    habiter log"
+  options[:yester] = 0
+  opts.on('-y', '--yester [DAYS]',
+          "Log an event in the past, given a number of days") do |days|
+    options[:yester] = days.to_i
+  end
+end
+
+optparse.parse!
+
+if ARGV[0] == 'did'
+  key = ARGV[1]
+  scalar = (ARGV.length > 3) ? ARGV[2] : false
+  hm.did(key, scalar, options[:yester])
+elsif ARGV[0] == 'log'
+  hm.log(options)
+elsif ARGV[0] == 'dump'
+  hm.dump(options)
+end
